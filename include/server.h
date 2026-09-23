@@ -31,7 +31,7 @@ typedef struct server_ctx {
     struct sockaddr_in          server_addr;
 } server_ctx_t;
 
-int init(server_ctx_t *ctx, int port, size_t max_connections);
-void run(server_ctx_t *ctx);
+int server_init(server_ctx_t *ctx, int port, size_t max_connections);
+void server_run(server_ctx_t *ctx);
 
 #endif

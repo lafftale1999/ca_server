@@ -29,6 +29,11 @@ static int _add_connection(server_ctx_t *ctx, int connection) {
         printf("_add_connection failed, ctx is NULL\n");
         return -1;
     }
+
+    if (ctx->connections.len >= ctx->max_connections) {
+        printf("_add_connection failed, max connections reached\n");
+        return -1;
+    }
     
     if (ctx->connections.len >= ctx->connections.size) {
         if (_pool_calloc(&ctx->connections) < 0) {
@@ -127,7 +132,7 @@ static int _accept_connection(server_ctx_t *ctx) {
     return 0;
 }
 
-int init(server_ctx_t *ctx, int port, size_t max_connections) {
+int server_init(server_ctx_t *ctx, int port, size_t max_connections) {
     if (ctx == NULL) {
         printf("No ctx to initializen\n");
         return -1;
@@ -175,7 +180,7 @@ cleanup:
     return -1;
 }
 
-void run(server_ctx_t *ctx) {
+void server_run(server_ctx_t *ctx) {
     if (ctx == NULL) {
         printf("Failed to run server, ctx is NULL\n");
         return;
