@@ -67,23 +67,23 @@ int pool_find_connection(connection_pool_handle_t *pool, int fd);
 /**
  * \brief Read data related to the connection buffer to the file descriptor
  * 
- * \param *con_buf connection buffer to store data in
+ * \param *buf buffer to store data in
  * \param fd file descriptor to read data from
  * \param slice_limit_bytes max bytes to read before switching context
  * 
  * \return LNET_SUCCESS | LNET_STATIC_ERR | LNET_BUFFER_FULL | LNET_MEM_ERR | LNET_UNKNOWN_ERR | LNET_CON_CLOSED | LNET_WOULD_BLOCK | LNET_SLICE_LIM_HIT
  */
-int con_read(con_buffer_t *con_buf, int fd, size_t slice_limit_bytes);
+int con_read(con_data_buffer_t *buf, int fd, size_t slice_limit_bytes);
 
 /**
  * \brief Send data from connection buffer to file descriptor
  * 
- * \param *con_buf connection buffer containg data to send
+ * \param *buf buffer containing data to send
  * \param fd file descriptor to send data to
  * \param slice_limit_bytes max bytes to send before switching context
  * 
  * \return LNET_SUCCESS | LNET_STATIC_ERR | LNET_CON_CLOSED | LNET_WOULD_BLOCK | LNET_UNKNOWN_ERR | LNET_SLICE_LIM_HIT
  */
-int con_send(con_buffer_t *con_buf, int fd, size_t slice_limit_bytes);
+int con_send(con_data_buffer_t *buf, int fd, size_t slice_limit_bytes);
 
 #endif

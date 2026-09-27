@@ -3,6 +3,14 @@
 
 #include "net_common.h"
 
+typedef struct _internal_buffer {
+    char   *data;
+    char   *read_pos;
+    char   *write_pos;
+    size_t  size;
+    size_t  len;
+} con_data_buffer_t;
+
 /**
  * \brief Connection buffer containing the data buffer and
  * metadata regarding the structure
@@ -10,11 +18,8 @@
  * \note read and write position is updated with read / write operations.
  */
 typedef struct _con_buffer {
-    char   *buf;        /** Buffer containing data */
-    char   *read_pos;   /** Read position in buffer */
-    char   *write_pos;  /** Write position in buffer */
-    size_t  size;       /** Allocated memory for buffer */
-    size_t  len;        /** Initialized length of buffer */
+    con_data_buffer_t data_in;  /** Buffer for incoming data */
+    con_data_buffer_t data_out; /** Buffer for outgoing data */
 } con_buffer_t;
 
 /**
@@ -26,15 +31,15 @@ typedef struct _con_buffer {
  * 
  * \return LNET_SUCCESS | LNET_STATIC_ERR | LNET_UNKNOWN_ERR | LNET_MEM_ERR | LNET_BUFFER_FULL
  */
-int con_buffer_append(con_buffer_t *buf, const char *data, size_t data_len);
+int con_buffer_append(con_data_buffer_t *buf, const char *data, size_t data_len);
 
 /**
  * \brief Gracefully clear connection buffer
  * 
- * \param *buf connection buffer to clear
+ * \param *con_buf connection buffer to clear
  * 
  * \return LNET_SUCCESS | LNET_STATIC_ERR
  */
-int con_buffer_clear(con_buffer_t *buf);
+int con_buffer_clear(con_buffer_t *con_buf);
 
 #endif

@@ -49,6 +49,7 @@ static int _accept_connection(server_ctx_t *ctx) {
         return res;
     }
 
+    printf("Currently connected: %ld\n", ctx->connections.len - 1);
     return res;
 }
 
@@ -62,7 +63,11 @@ static int _accept_connection(server_ctx_t *ctx) {
  */
 static int _incoming_data(server_ctx_t *ctx, size_t idx) {
     int fd = 0;
+    int read_res = 0;
     int res = 0;
+    size_t cur_len = 0;
+    uint8_t data_received = 0;
+
     con_buffer_t *con_buf = NULL;
 
     if (ctx == NULL) {
@@ -77,30 +82,38 @@ static int _incoming_data(server_ctx_t *ctx, size_t idx) {
 
     fd = ctx->connections.connections[idx].fd;
     con_buf = &ctx->connections.buffers[idx];
+    cur_len = con_buf->data_in.len;
 
-    res = con_read(con_buf, fd, SERVER_READ_SLICE_LIM);
+    read_res = con_read(&con_buf->data_in, fd, SERVER_READ_SLICE_LIM);
+    data_received = cur_len != con_buf->data_in.len ? 1 : 0;
 
     char hello[] = "Hello World\n";
-    con_buffer_append(con_buf, hello, sizeof(hello));
+    res = con_buffer_append(&con_buf->data_out, hello, sizeof(hello));
 
-    switch (res) {
+    switch (read_res) {
+        case LNET_SUCCESS:
         case LNET_SLICE_LIM_HIT:
         case LNET_WOULD_BLOCK:
-            /**
-             * check if full message is received
-             */
-            if (1) { // not full message received
-                res = con_send(con_buf, fd, SERVER_READ_SLICE_LIM);
-                return res;
-            }
-            else { // full message received
-
-            }
-            break;
-
         case LNET_CON_CLOSED:
-            printf("Connection closed\n");
-            return pool_del_connection(&ctx->connections, fd);
+            if (data_received == 1) {
+                /**
+                 * check if full message is received
+                 */
+                if (1) { // not full message received
+                    printf("Sending response\n");
+                    res = con_send(&con_buf->data_out, fd, SERVER_READ_SLICE_LIM);
+                }
+                else { // full message received
+
+                }
+            }
+
+            if (read_res == LNET_CON_CLOSED) {
+                printf("Connection closed\n");
+                read_res = pool_del_connection(&ctx->connections, fd);
+            }
+
+            return read_res;
 
         case LNET_BUFFER_FULL:
             /**
@@ -110,7 +123,7 @@ static int _incoming_data(server_ctx_t *ctx, size_t idx) {
 
         default:
             fprintf(stderr, "_incoming_data failed, con_read failed\n");
-            return res;
+            return read_res;
     }
 }
 
