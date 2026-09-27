@@ -196,17 +196,17 @@ int pool_del_connection(connection_pool_handle_t *pool, int fd) {
     return LNET_CON_CLOSED;
 }
 
-int con_read(con_buffer_t *con_buf, int fd, size_t slice_limit_bytes) {
+int con_read(con_data_buffer_t *buf, int fd, size_t slice_limit_bytes) {
     size_t        tot_bytes_read = 0;
     char          tmp_buf[POOL_TMP_BUFFER_SIZE] = {0};
     int           res = 0;
 
-    if (con_buf == NULL) {
-        fprintf(stderr, "con_read failed, con_buf is NULL\n");
+    if (buf == NULL) {
+        fprintf(stderr, "con_read failed, buf is NULL\n");
         return LNET_STATIC_ERR;
     }
 
-    if (con_buf->size >= CON_BYTE_BUF_MAX_SIZE || slice_limit_bytes == 0) {
+    if (buf->size >= CON_BYTE_BUF_MAX_SIZE || slice_limit_bytes == 0) {
         fprintf(stderr, "con_read failed, buffer is full\n");
         return LNET_BUFFER_FULL;
     }
@@ -217,7 +217,7 @@ int con_read(con_buffer_t *con_buf, int fd, size_t slice_limit_bytes) {
         ssize_t bytes_read = recv(fd, tmp_buf, sizeof(tmp_buf), 0);
 
         if (bytes_read > 0) {
-            res = con_buffer_append(con_buf, tmp_buf, (size_t) bytes_read);
+            res = con_buffer_append(buf, tmp_buf, (size_t) bytes_read);
             if (res < 0) {
                 fprintf(stderr, "con_read failed, unable to append to buffer\n");
                 return res;
@@ -244,31 +244,31 @@ int con_read(con_buffer_t *con_buf, int fd, size_t slice_limit_bytes) {
     return LNET_SLICE_LIM_HIT;
 }
 
-int con_send(con_buffer_t *con_buf, int fd, size_t slice_limit_bytes) {
+int con_send(con_data_buffer_t *buf, int fd, size_t slice_limit_bytes) {
     size_t        bytes_already_sent = 0;
     size_t        tot_bytes_sent = 0;
     size_t        bytes_to_send = 0;
 
-    if (con_buf == NULL) {
-        fprintf(stderr, "con_send failed, con_buf is NULL\n");
+    if (buf == NULL) {
+        fprintf(stderr, "con_send failed, buf is NULL\n");
         return LNET_STATIC_ERR;
     }
 
-    if (con_buf->buf == NULL) {
+    if (buf->data == NULL) {
         fprintf(stderr, "con_send failed, buffer is NULL");
         return LNET_STATIC_ERR;
     }
 
-    bytes_already_sent = con_buf->read_pos - con_buf->buf;
-    bytes_to_send = con_buf->len - bytes_already_sent;
+    bytes_already_sent = buf->read_pos - buf->data;
+    bytes_to_send = buf->len - bytes_already_sent;
 
     while (tot_bytes_sent < slice_limit_bytes) {
         if (bytes_to_send == 0) return LNET_SUCCESS; 
-        ssize_t bytes_sent = send(fd, con_buf->read_pos, bytes_to_send, 0);
+        ssize_t bytes_sent = send(fd, buf->read_pos, bytes_to_send, 0);
 
         if (bytes_sent > 0) {
             tot_bytes_sent += bytes_sent;
-            con_buf->read_pos += bytes_sent;
+            buf->read_pos += bytes_sent;
             bytes_to_send -= bytes_sent;
             continue;
         }

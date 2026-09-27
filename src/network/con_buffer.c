@@ -6,19 +6,21 @@
  */
 
 /**
- * \brief Allocates memory for data buffer
+ * \brief Allocates memory for data buf
  * 
- * \param *buf connection buffer to allocate memory for
+ * \param *buf connection buf to allocate memory for
  * 
  * \return LNET_SUCCESS | LNET_STATIC_ERR | LNET_BUFFER_FULL | LNET_MEM_ERR
  */
-static int _realloc_str_buf(con_buffer_t *buf) {
-    char  *tmp_arr;
+static int _realloc_str_buf(con_data_buffer_t *buf) {
+    char *tmp_arr;
     size_t tmp_size;
-    size_t read_off = buf->read_pos ? (size_t) (buf->read_pos - buf->buf) : 0;
+    size_t read_off;
+
+    read_off = buf->read_pos ? (size_t) (buf->read_pos - buf->data) : 0;
 
     if (buf == NULL) {
-        fprintf(stderr, "_realloc_str_buf failed, buf is NULL\n");
+        fprintf(stderr, "_realloc_str_buf failed, data_in is NULL\n");
         return LNET_STATIC_ERR;
     }
 
@@ -30,13 +32,13 @@ static int _realloc_str_buf(con_buffer_t *buf) {
         return LNET_BUFFER_FULL;
     }
 
-    tmp_arr = realloc(buf->buf, (sizeof(*buf->buf) * tmp_size));
+    tmp_arr = realloc(buf->data, (sizeof(*buf->data) * tmp_size));
     if (tmp_arr == NULL) {
         fprintf(stderr, "_realloc_str_buf failed, unable to reallocate memory: %s\n", strerror(errno));
         return LNET_MEM_ERR;
     }
 
-    buf->buf = tmp_arr;
+    buf->data = tmp_arr;
     buf->read_pos = tmp_arr + read_off;
     buf->write_pos = tmp_arr + buf->len;
     buf->size = tmp_size;
@@ -45,10 +47,32 @@ static int _realloc_str_buf(con_buffer_t *buf) {
 }
 
 /**
+ * \brief Clear data buffer
+ * 
+ * \param *buf pointer to data buffer
+ * 
+ * \return LNET_SUCCESS | LNET_STATIC_ERR
+ */
+static int _clear_data(con_data_buffer_t *buf) {
+    if (buf == NULL) {
+        fprintf(stderr, "_clear_data failed, buf is NULL\n");
+        return LNET_STATIC_ERR;
+    }
+    
+    if (buf->data != NULL) {
+        free(buf->data);
+    }
+
+    *buf = (con_data_buffer_t){0};
+
+    return LNET_SUCCESS;
+}
+
+/**
  * PUBLIC FUNCTIONS
  */
 
-int con_buffer_append(con_buffer_t *buf, const char *data, size_t data_len) {
+int con_buffer_append(con_data_buffer_t *buf, const char *data, size_t data_len) {
     size_t new_len = 0;
     int res = 0;
 
@@ -83,22 +107,21 @@ int con_buffer_append(con_buffer_t *buf, const char *data, size_t data_len) {
 
     memcpy(buf->write_pos, data, data_len);
     buf->len = new_len;
-    buf->write_pos = buf->buf + buf->len;
+    buf->write_pos = buf->data + buf->len;
 
     return LNET_SUCCESS;
 }
 
-int con_buffer_clear(con_buffer_t *buf) {
-    if (buf == NULL) {
-        fprintf(stderr, "con_buffer_clear failed: buf is NULL\n");
+int con_buffer_clear(con_buffer_t *con_buf) {
+    if (con_buf == NULL) {
+        fprintf(stderr, "con_buffer_clear failed: con_buf is NULL\n");
         return LNET_STATIC_ERR;
     }
 
-    if (buf->buf != NULL) {
-        free(buf->buf);
-    }
-
-    *buf = (con_buffer_t){0};
+    if (_clear_data(&con_buf->data_in)  != LNET_SUCCESS ||
+        _clear_data(&con_buf->data_out) != LNET_SUCCESS) {
+            return LNET_STATIC_ERR;
+        }
 
     return LNET_SUCCESS;
 }
