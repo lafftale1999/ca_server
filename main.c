@@ -5,6 +5,11 @@
 int main(void) {
     server_ctx_t ctx;
 
-    server_init(&ctx, 8080, 100);
+    if (server_open(&ctx, 8080) != LNET_SUCCESS) {
+        exit(1);
+    }
+
+    server_run(&ctx);
+
     return 0;
 }
