@@ -10,10 +10,10 @@ SRCS := \
 	src/network/server.c \
 	src/network/connection.c \
 	src/network/con_buffer.c \
-	src/http/internal/http_method.c \
-	src/http/internal/http_header.c \
-	src/http/internal/http_version.c \
-	src/http/internal/http_path.c
+	src/http/content/http_method.c \
+	src/http/content/http_header.c \
+	src/http/content/http_version.c \
+	src/http/content/http_path.c
 
 # Header search paths.
 INC_DIRS := \
@@ -22,7 +22,7 @@ INC_DIRS := \
 	include/network/common \
 	include/http \
 	include/http/common \
-	include/http/internal
+	include/http/content
 
 # ---------------------------------------------------------------------------
 # Toolchain and flags
