@@ -173,6 +173,12 @@ int http_header_free(http_header_t *header) {
     if (header->key != NULL) free(header->key);
     if (header->val != NULL) free(header->val);
 
+    header->key = NULL;
+    header->val = NULL;
+
+    header->key_len = 0;
+    header->val_len = 0;
+
     return LHTTP_SUCCESS;
 }
 
@@ -274,6 +280,7 @@ int http_headers_arr_free(http_headers_arr_t *headers) {
 
     free(headers->headers);
 
+    headers->headers = NULL;
     headers->len = 0;
     headers->size = 0;
 
