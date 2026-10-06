@@ -31,6 +31,19 @@ typedef struct _http_header_ {
 int http_header_parse_line_to_header(http_header_t *out, const char *line, size_t line_size);
 
 /**
+ * \brief Initialize a header with key and value
+ * 
+ * \param *out header to initialize
+ * \param *key key string
+ * \param key_len key string length
+ * \param *val value string
+ * \param val_len value string length
+ * 
+ * \return LHTTP_SUCCESS | LHTTP_STATIC_ERR | LHTTP_MEMORY_ERR
+ */
+int http_header_key_val_to_header(http_header_t *out, const char *key, size_t key_len, const char *val, size_t val_len);
+
+/**
  * \brief Destroy initialized http_header_t
  * 
  * \param *header header to destroy

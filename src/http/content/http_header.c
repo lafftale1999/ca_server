@@ -164,6 +164,28 @@ int http_header_parse_line_to_header(http_header_t *out, const char *line, size_
     return LHTTP_SUCCESS;
 }
 
+int http_header_key_val_to_header(http_header_t *out, const char *key, size_t key_len, const char *val, size_t val_len) {
+    int res;
+    
+    if (key == NULL) {
+        fprintf(stderr, "http_header_key_val_to_header failed, key is NULL\n");
+        return LHTTP_STATIC_ERR;
+    }
+
+    if (val == NULL) {
+        fprintf(stderr, "http_header_key_val_to_header failed, val is NULL\n");
+        return LHTTP_STATIC_ERR;
+    }
+
+    res = http_header_allocate_key_val(out, key, key_len, val, val_len);
+    if (res < 0) {
+        fprintf(stderr, "http_header_key_val_to_header failed, unable to allocate memory\n");
+        return res;
+    }
+
+    return LHTTP_SUCCESS;
+}
+
 int http_header_free(http_header_t *header) {
     if (header == NULL) {
         fprintf(stderr, "http_header_free failed, header is NULL\n");
