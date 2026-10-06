@@ -1,6 +1,12 @@
 #include "http_header.h"
 
 /**
+ * --------------------------------------------------------------------------------------------------
+ * SINGLE HEADER
+ * --------------------------------------------------------------------------------------------------
+ */
+
+/**
  * \brief Length restricted string tokenization
  * 
  * \param **pos pointer to position in string
@@ -154,6 +160,122 @@ int http_header_parse_line_to_header(http_header_t *out, const char *line, size_
         fprintf(stderr, "http_header_parse_line_to_header failed, unable to allocate memory\n");
         return res;
     }
+
+    return LHTTP_SUCCESS;
+}
+
+int http_header_free(http_header_t *header) {
+    if (header == NULL) {
+        fprintf(stderr, "http_header_free failed, header is NULL\n");
+        return LHTTP_STATIC_ERR;
+    }
+
+    if (header->key != NULL) free(header->key);
+    if (header->val != NULL) free(header->val);
+
+    return LHTTP_SUCCESS;
+}
+
+/**
+ * --------------------------------------------------------------------------------------------------
+ * ARRAY OF HEADERS
+ * --------------------------------------------------------------------------------------------------
+ */
+
+/**
+ * \brief Allocate memory for headers
+ * 
+ * \param *headers pointer to header data structure
+ * \param new_size size of new memory area
+ * 
+ * \return LHTTP_SUCCESS | LHTTP_STATIC_ERR | LHTTP_MEMORY_ERR
+ */
+static int http_headers_arr_reallocate(http_headers_arr_t *headers, size_t new_size) {
+    http_header_t *tmp;
+
+    if (headers == NULL) {
+        fprintf(stderr, "http_headers_arr_reallocate failed, headers is NULL\n");
+        return LHTTP_STATIC_ERR;
+    }
+
+    tmp = realloc(headers->headers, new_size * sizeof(http_header_t));
+    if (tmp == NULL) {
+        fprintf(stderr, "http_headers_arr_reallocate failed, unable to allocate memory\n");
+        return LHTTP_MEMORY_ERR;
+    }
+
+    headers->headers = tmp;
+    headers->size = new_size;
+
+    return LHTTP_SUCCESS;
+}
+
+int http_headers_arr_append(http_headers_arr_t *headers, http_header_t *h) {
+    size_t new_size;
+    int res;
+    if (headers == NULL) {
+        fprintf(stderr, "http_headers_arr_append failed, headers is NULL\n");
+        return LHTTP_STATIC_ERR;
+    }
+
+    if (h == NULL) {
+        fprintf(stderr, "http_headers_arr_append failed, h is NULL\n");
+        return LHTTP_STATIC_ERR;
+    }
+
+    if (headers->len == headers->size) {
+        new_size = headers->size > 0 ? headers->size * LHTTP_HEADER_ARR_MODIFIER : LHTTP_HEADER_ARR_INIT_SIZE;
+
+        if ((res = http_headers_arr_reallocate(headers, new_size)) < 0) {
+            fprintf(stderr, "http_headers_arr_append failed, unable to allocate memory\n");
+            return res;
+        }
+    }
+
+    memcpy(&headers->headers[headers->len], h, sizeof(*h));
+    headers->len++;
+
+    return LHTTP_SUCCESS;
+}
+
+int http_headers_arr_find(http_headers_arr_t *headers, const char *target) {
+    if (headers == NULL) {
+        fprintf(stderr, "http_headers_arr_find failed, headers is NULL\n");
+        return LHTTP_STATIC_ERR;
+    }
+
+    if (target == NULL) {
+        fprintf(stderr, "http_headers_arr_find failed, target is NULL\n");
+        return LHTTP_STATIC_ERR;
+    }
+
+    for (size_t i = 0; i < headers->len; i++) {
+        http_header_t *h = &headers->headers[i];
+
+        if (!strcmp(target, h->key)) return i;
+    }
+
+    return LHTTP_NOT_FOUND;
+}
+
+int http_headers_arr_free(http_headers_arr_t *headers) {
+    if (headers == NULL) {
+        fprintf(stderr, "http_headers_arr_free failed, headers is NULL\n");
+        return LHTTP_STATIC_ERR;
+    }
+
+    if (headers->headers == NULL && headers->size == 0) {
+        return LHTTP_SUCCESS;
+    }
+
+    for (size_t i = 0; i < headers->len; i++) {
+        http_header_free(&headers->headers[i]);
+    }
+
+    free(headers->headers);
+
+    headers->len = 0;
+    headers->size = 0;
 
     return LHTTP_SUCCESS;
 }

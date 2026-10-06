@@ -11,13 +11,13 @@
  */
 
 /**
- * http_header structure
+ * \brief HTTP header structure
  */
 typedef struct _http_header_ {
-    char    *key;
-    size_t   key_len;
-    char    *val;
-    size_t   val_len;
+    char    *key;       /** Key string */
+    size_t   key_len;   /** Key string length */
+    char    *val;       /** Value string */
+    size_t   val_len;   /** Value string length */
 } http_header_t;
 
 /**
@@ -26,7 +26,7 @@ typedef struct _http_header_ {
  * \param *out header to initialize
  * \param *line data to fill header
  * 
- * \return 
+ * \return LHTTP_SUCCESS | LHTTP_STATIC_ERR | LHTTP_MEMORY_ERR
  */
 int http_header_parse_line_to_header(http_header_t *out, const char *line, size_t line_size);
 
@@ -35,7 +35,7 @@ int http_header_parse_line_to_header(http_header_t *out, const char *line, size_
  * 
  * \param *header header to destroy
  * 
- * \return 
+ * \return LHTTP_SUCCESS | LHTTP_STATIC_ERR
  */
 int http_header_free(http_header_t *header);
 
@@ -46,7 +46,7 @@ int http_header_free(http_header_t *header);
  */
 
 /**
- * \brief Array of http headers
+ * \brief Array of HTTP headers
  */
 typedef struct _http_headers_ {
     http_header_t  *headers;    /** Array of headers */
@@ -58,11 +58,11 @@ typedef struct _http_headers_ {
  * \brief Append headers to array
  * 
  * \param *headers array of headers
- * \param h header to append
+ * \param *h header to append
  * 
- * \return LHTTP_SUCCESS | LHTTP_STATIC_ERR
+ * \return LHTTP_SUCCESS | LHTTP_STATIC_ERR | LHTTP_MEMORY_ERR
  */
-int http_headers_arr_append(http_headers_arr_t *headers, http_header_t h);
+int http_headers_arr_append(http_headers_arr_t *headers, http_header_t *h);
 
 /**
  * \brief Find related HTTP header
@@ -70,7 +70,7 @@ int http_headers_arr_append(http_headers_arr_t *headers, http_header_t h);
  * \param *headers array of headers
  * \param *target string target of header (case sensitive)
  * 
- * \return idx for header in array. Returns < 0 if unsuccesful
+ * \return idx if succesfull. Failure = LHTTP_STATIC_ERR | LHTTP_NOT_FOUND
  */
 int http_headers_arr_find(http_headers_arr_t *headers, const char *target);
 
@@ -78,6 +78,8 @@ int http_headers_arr_find(http_headers_arr_t *headers, const char *target);
  * \brief Free array of http headers
  * 
  * \param *headers array of headers
+ * 
+ * \return LHTTP_SUCCESS | LHTTP_STATIC_ERR
  */
 int http_headers_arr_free(http_headers_arr_t *headers);
 

@@ -8,5 +8,6 @@
 #define LHTTP_STR_MALFORMED             -4  /** String is malformed */
 #define LHTTP_MEMORY_ERR                -5  /** Memory error */
 #define LHTTP_UNKOWN_VERSION            -6  /** Unkown version */
+#define LHTTP_NOT_FOUND                 -7  /** Not found */
 
 #endif
