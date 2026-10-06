@@ -9,13 +9,18 @@ SRCS := \
 	main.c \
 	src/network/server.c \
 	src/network/connection.c \
-	src/network/con_buffer.c
+	src/network/con_buffer.c \
+	src/http/http_method.c \
+	src/http/http_header.c \
+	src/http/http_version.c
 
 # Header search paths.
 INC_DIRS := \
 	include \
 	include/network \
-	include/network/common
+	include/network/common \
+	include/http \
+	include/http/common
 
 # ---------------------------------------------------------------------------
 # Toolchain and flags
