@@ -9,5 +9,6 @@
 #define LHTTP_MEMORY_ERR                -5  /** Memory error */
 #define LHTTP_UNKOWN_VERSION            -6  /** Unkown version */
 #define LHTTP_NOT_FOUND                 -7  /** Not found */
+#define LHTTP_REQUEST_INCOMPLETE        -8  /** Not received the request in full */
 
 #endif

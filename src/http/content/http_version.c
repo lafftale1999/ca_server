@@ -2,6 +2,8 @@
 
 static const char V_1_1_STR[] = "1.1";
 
+static const char LEADING_V_STR[] = "HTTP/";
+
 static int http_version_boundary_check(const char *str) {
     if (str == NULL) {
         fprintf(stderr, "http_version_boundary_check failed, str is NULL\n");
@@ -19,18 +21,26 @@ static int http_version_boundary_check(const char *str) {
 
 int http_version_str_to_v(const char *str) {
     int res = LHTTP_UNKOWN_VERSION;
-    
+    const char *version;
+
     if (str == NULL) {
         fprintf(stderr, "http_version_str_to_v failed, str is NULL\n");
         return LHTTP_STATIC_ERR;
     }
 
-    if (http_version_boundary_check(str) != 0) {
+    if (strncmp(LEADING_V_STR, str, sizeof(LEADING_V_STR) - 1)) {
+        fprintf(stderr, "http_version_str_to_v failed, string is missing \"HTTP/\"\n");
+        return LHTTP_STR_MALFORMED;
+    }
+
+    version = str + (sizeof(LEADING_V_STR) - 1);
+
+    if (http_version_boundary_check(version) != 0) {
         fprintf(stderr, "http_version_str_to_v failed, string is malformed\n");
         return LHTTP_STR_MALFORMED;
     }
 
-    if (!strcmp(str, V_1_1_STR)) {
+    if (!strcmp(version, V_1_1_STR)) {
         res = HTTP_VERSION_1_1;
     }
     else {

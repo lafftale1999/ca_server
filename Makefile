@@ -14,7 +14,8 @@ SRCS := \
 	src/http/content/http_header.c \
 	src/http/content/http_version.c \
 	src/http/content/http_path.c \
-	src/http/content/http_body.c
+	src/http/content/http_body.c \
+	src/http/http_parser.c
 
 # Header search paths.
 INC_DIRS := \
