@@ -11,4 +11,6 @@ typedef struct _http_request_ {
     http_body_t         body;
 } http_request_t;
 
+int http_request_free(http_request_t *req);
+
 #endif

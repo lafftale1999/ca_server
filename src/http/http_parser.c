@@ -25,7 +25,7 @@ static int http_parser_find_body(const char *pos, const char *end, const char **
     return LHTTP_REQUEST_INCOMPLETE;
 }
 
-static int http_parser_find_header_line(const char *pos, const char *end, const char **out, const char **next_start) {
+static int http_parser_next_line(const char *pos, const char *end, const char **out, const char **next_start) {
     /**
      * While position isn't end or after
      */
@@ -38,7 +38,7 @@ static int http_parser_find_header_line(const char *pos, const char *end, const 
              * Check that the next char is \n
              */
             if (*(pos + 1) != '\n') {
-                fprintf(stderr, "http_parser_find_header_line failed, data is malformed\n");
+                fprintf(stderr, "http_parser_next_line failed, data is malformed\n");
                 return LHTTP_STR_MALFORMED;
             }
 
@@ -82,6 +82,11 @@ static int http_parser_request_first_line(http_request_t *out, const char *line,
             pos_arr[idx++] = (pos + 1);
         }
         pos++;
+    }
+
+    if (idx < 3) {
+        fprintf(stderr, "http_parser_request_firs_line failed, line is malformed\n");
+        return LHTTP_STR_MALFORMED;
     }
 
     /**
@@ -164,23 +169,66 @@ int http_parser_data_to_request(http_request_t *out, const char *data, size_t da
      * Parse First Line
      */
     line_start = data_start;
-    res = http_parser_find_header_line(line_start, body_start, &line_end, &new_line_start);
+    res = http_parser_next_line(line_start, body_start, &line_end, &new_line_start);
     if (res < 0) {
         fprintf(stderr, "http_parser_data_to_request failed, unable to parse first line\n");
-        return res;
+        goto cleanup;
     }
 
     res = http_parser_request_first_line(out, line_start, (size_t)(line_end - line_start));
     if (res < 0) {
         fprintf(stderr, "http_parser_data_to_request failed, unable to initialize first line\n");
-        return res;
+        goto cleanup;
     }
-
     
     printf("First line variables:\n");
     printf("Method: %s\n", http_method_m_to_str(out->method));
     printf("Path: %s\n", out->path.path);
     printf("Version: %s\n", http_version_v_to_str(out->version));
 
+    int count = 0;
+
+    while (new_line_start != NULL && new_line_start < body_start) {
+        printf("Count=%d\n", count++);
+        http_header_t tmp = {0};
+        line_start = new_line_start;
+        res = http_parser_next_line(line_start, body_start, &line_end, &new_line_start);
+
+        const char *tmp_pointer = line_start;
+
+        printf("----------\n");
+        while (tmp_pointer <= line_end) {
+            printf(".");
+            printf("%c", *tmp_pointer);
+            tmp_pointer++;
+        }
+
+        printf("\n");
+        res = http_header_parse_line_to_header(&tmp, line_start, (size_t)(line_end - line_start + 1));
+        if (res < 0) {
+            fprintf(stderr, "http_parser_data_to_request failed, unable to parse line to header\n");
+            goto cleanup;
+        }
+
+        res = http_headers_arr_append(&out->headers, &tmp);
+        if (res < 0) {
+            fprintf(stderr, "http_parser_data_to_request failed, unable to add header\n");
+            goto cleanup;
+        }
+
+        
+    }
+
+    for (size_t i = 0; i < out->headers.len; i++) {
+        printf("%s: %s\n", out->headers.headers[i].key, out->headers.headers[i].val);
+    }
+
     return LHTTP_SUCCESS;
+
+cleanup:
+    if (out != NULL) {
+        http_request_free(out);
+    }
+
+    return res;
 }

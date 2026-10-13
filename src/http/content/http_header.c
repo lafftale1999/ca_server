@@ -48,8 +48,11 @@ static int restricted_strtok(const char **pos,
     *len_out = 0;
     *start_out = NULL;
 
-    while (p < end && strchr(delims, *p))
+    printf("strok_func called\n");
+
+    while (p < end && strchr(delims, *p)) {
         p++;
+    }
 
     if (p == end) {
         return LHTTP_SUCCESS;
@@ -57,11 +60,15 @@ static int restricted_strtok(const char **pos,
 
     *start_out = p;
 
-    while (p < end && !strchr(delims, *p))
+    while (p < end && !strchr(delims, *p)) {
+        printf("%c", *p);
         p++;
+    }
     
     *len_out = (size_t) (p - *start_out);
     *pos = p;
+
+    printf("\n");
     
     return LHTTP_SUCCESS;
 }
@@ -260,7 +267,7 @@ int http_headers_arr_append(http_headers_arr_t *headers, http_header_t *h) {
         }
     }
 
-    memcpy(&headers->headers[headers->len], h, sizeof(*h));
+    memcpy(&headers->headers[headers->len], h, sizeof(http_header_t));
     headers->len++;
 
     return LHTTP_SUCCESS;
