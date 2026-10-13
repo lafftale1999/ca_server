@@ -4,6 +4,8 @@
 TARGET    := ca_server
 BUILD_DIR := build
 
+include lib/lhttp_parser/http_parser.mk
+
 # Add new source files here (one per line).
 SRCS := \
 	main.c \
@@ -25,6 +27,10 @@ CFLAGS   := -std=c11 -Wall -Wextra -Wpedantic -g
 CPPFLAGS := $(addprefix -I,$(INC_DIRS)) -D_GNU_SOURCE -MMD -MP   # _GNU_SOURCE: expose Linux/POSIX extensions (e.g. SO_REUSEPORT)
 LDFLAGS  :=
 LDLIBS   :=            # e.g. -lssl -lcrypto
+
+# LHTTP_PARSER
+SRCS   += $(LAFFTALE_HTTP_LIB_SRCS)
+CFLAGS += $(LAFFTALE_HTTP_LIB_INC)
 
 # ---------------------------------------------------------------------------
 # Derived variables (no need to edit below this line)
