@@ -4,28 +4,20 @@
 TARGET    := ca_server
 BUILD_DIR := build
 
+include lib/lhttp_parser/http_parser.mk
+
 # Add new source files here (one per line).
 SRCS := \
 	main.c \
 	src/network/server.c \
 	src/network/connection.c \
-	src/network/con_buffer.c \
-	src/http/content/http_method.c \
-	src/http/content/http_header.c \
-	src/http/content/http_version.c \
-	src/http/content/http_path.c \
-	src/http/content/http_body.c \
-	src/http/http_parser.c \
-	src/http/http_request.c
+	src/network/con_buffer.c
 
 # Header search paths.
 INC_DIRS := \
 	include \
 	include/network \
-	include/network/common \
-	include/http \
-	include/http/common \
-	include/http/content
+	include/network/common
 
 # ---------------------------------------------------------------------------
 # Toolchain and flags
@@ -35,6 +27,10 @@ CFLAGS   := -std=c11 -Wall -Wextra -Wpedantic -g
 CPPFLAGS := $(addprefix -I,$(INC_DIRS)) -D_GNU_SOURCE -MMD -MP   # _GNU_SOURCE: expose Linux/POSIX extensions (e.g. SO_REUSEPORT)
 LDFLAGS  :=
 LDLIBS   :=            # e.g. -lssl -lcrypto
+
+# LHTTP_PARSER
+SRCS   += $(LAFFTALE_HTTP_LIB_SRCS)
+CFLAGS += $(LAFFTALE_HTTP_LIB_INC)
 
 # ---------------------------------------------------------------------------
 # Derived variables (no need to edit below this line)

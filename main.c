@@ -1,7 +1,7 @@
 #include <stdio.h>
 
 #include "server.h"
-#include "http_parser.h"
+#include "lhttp_parser.h"
 
 int main(void) {
     /* server_ctx_t ctx;
@@ -11,16 +11,25 @@ int main(void) {
     }
 
     server_run(&ctx); */
+    int res = 0;
     http_request_t req = {0};
 
     const char data[] = \
-        "GET / HTTP/1.1\r\n" \
-        "Content-Type: application/json\r\n" \
-        "Content-Length: 123\r\n" \
-        "\r\n" \
-        "{\"message\": \"Hello World\"}\r\n"; 
+        "POST /index.html HTTP/1.1\r\n"
+        "Host: example.com\r\n"
+        "Content-Length: 26\r\n"
+        "Content-Type: application/json\r\n"
+        "\r\n"
+        "{\"message\": \"Hello World\"}"
+        "\r\n";
 
-    http_parser_data_to_request(&req, data, sizeof(data));
+    if ((res = http_request_from_data(&req, data, sizeof(data) - 1)) != LHTTP_SUCCESS) {
+        printf("Unable to parse request: %d\n", res);
+        return 1;
+    }
+    
+    printf("Body:\n");
+    printf("%s\n", req.body.data);
 
     return 0;
 }

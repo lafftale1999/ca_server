@@ -1,0 +1,3 @@
+[submodule "lib/lhttp_parser"]
+	path = lib/lhttp_parser
+	url = git@github.com:lafftale1999/lhttp_parser.git
